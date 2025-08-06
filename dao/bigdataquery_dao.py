@@ -100,6 +100,11 @@ def get_eqp_hw_process_history(line_name, eqp_id, lot_id, step_seq, start_date, 
                    'dateTo': end_date,
                    'like_conditions' : {'targetline' : f"%{line_name}%" }
                   }
+   #아래와 같이 직접작성한 sql문을 key="query"로 작성이 가능하다
+   #{ "query": "select * from fab.m_fab_process line_id in ('aaa', 'bbb') limit 100 " }
+   #get_eqp_hw_process_history() 를 위와같은 형식으로 변경해줘 
+
+    
     custom_columns = [ 'area', 'equipmentid', 'moduleid', 'workgroup', 'state', 'starttime', 'endtime', 'starttime_rev', 'endtime_rev', 'materialid', 'recipename', 'stepno', 'stepname',
                       'if_step_seq', 'if_lot_id', 'if_tkin_date' ]
     
