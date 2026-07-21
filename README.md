@@ -1,6 +1,10 @@
 11번 서버기준 /user/smprc/applications/SpaceDcollBatchService/tmp/oco_dsm_temp 폴드 생성함 
 "base_dir":"tmp/oco_dsm_temp/" 로 저장해도 되는지 확인 해줘
 
+1. 2. 3.번 쿼리를 사용해서  vm_dao.py의 pt_session으로 조회하여, 그 결과를 ptnew_session에 삭제 후 삽입을 하고 싶다
+그러기 위해서 vm_dao.py에 기능을 추가하고 oco_dsm_collector.py와 비슷한 oco_dsm_batch.py를 생성해줘
+다음 문구에 1시간마다 로 수정해줘 --> scheduler.add_job(execute_oco_dsm_batch_job, 'cron', hour='10', id='oco_dsm_collector', max_instances=1) ##1시간마다 실행
+
 # ---------------------------------------------------------------------------
 # 1. 조회쿼리 (with BaseData as (...) select .....)
 # ---------------------------------------------------------------------------
