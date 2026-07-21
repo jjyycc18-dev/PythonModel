@@ -1,10 +1,12 @@
 11번 서버기준 /user/smprc/applications/SpaceDcollBatchService/tmp/oco_dsm_temp 폴드 생성함 
 "base_dir":"tmp/oco_dsm_temp/" 로 저장해도 되는지 확인 해줘
 
-
+# ---------------------------------------------------------------------------
+# 1. 조회쿼리 (with BaseData as (...) select .....)
+# ---------------------------------------------------------------------------
 SELECT_LOT_STATUS_SQL = text(
     """
-    WITH BaseDate AS (
+    WITH BaseData AS (
         SELECT
             k_dsm_seq, index_no, device_id, step_seq, eqp_id, chamber_id, ppid
             ,reticle_id, pre_eqp_id, lot_cnt, time_gap_hrs, measure_ppid_rottn_yn
@@ -47,7 +49,7 @@ SELECT_LOT_STATUS_SQL = text(
         ,MAX(time_gap_hrs) AS max_time_base_hrs
         ,measure_ppid_rottn_yn
         ,SYSTIMESTAMP AS create_tmstp
-    FROM BaseDate
+    FROM BaseData
     GROUP BY
         k_dsm_seq, index_no, device_id, step_seq
         ,eqp_id, chamber_id, ppid, reticle_id, pre_eqp_id
