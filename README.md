@@ -40,7 +40,7 @@ SELECT_LOT_STATUS_SQL = text(
                 UNION
                 SELECT
                     c.k_dsm_seq, dt.index_no, c.device_id, c.step_seq, dt.eqp_id
-                    ,dt.ppid, dt.reticle_id, dt.pre_eqp_id, c.measure_ppid_rottn_tn, dt.chamber_id
+                    ,dt.ppid, dt.reticle_id, dt.pre_eqp_id, c.measure_ppid_rottn_yn, dt.chamber_id
                 FROM ivm_k_ds_ovl_config c
                 JOIN ivm_k_ds_ovl_config_dt dt ON c.k_dsm_seq = dt.k_dsm_seq
             ) t ON s.k_dsm_seq = t.k_dsm_seq AND s.index_no = t.index_no
