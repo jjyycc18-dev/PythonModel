@@ -1,3 +1,86 @@
+11번 서버기준 /user/smprc/applications/SpaceDcollBatchService/tmp/oco_dsm_temp 폴드 생성함 
+"base_dir":"tmp/oco_dsm_temp/" 로 저장해도 되는지 확인 해줘
+
+
+SELECT_LOT_STATUS_SQL = text(
+    """
+    WITH BaseDate AS (
+        SELECT
+            k_dsm_seq, index_no, device_id, step_seq, eqp_id, chamber_id, ppid
+            ,reticle_id, pre_eqp_id, lot_cnt, time_gap_hrs, measure_ppid_rottn_yn
+        FROM (
+            SELECT
+                s.k_dsm_seq, s.index_no, t.device_id, t.step_seq
+                ,CASE WHEN t.eqp_id = 'N' THEN 'N' ELSE s.eqp_id END eqp_id
+                ,CASE WHEN t.chamber_id = 'N' THEN 'N' ELSE s.chamber_id END chamber_id
+                ,CASE WHEN t.ppid = 'Y' THEN s.ppid ELSE t.ppid END ppid
+                ,CASE WHEN t.reticle_id = 'Y' THEN s.reticle_id ELSE t.reticle_id END reticle_id
+                ,CASE WHEN t.pre_eqp_id = 'N' THEN 'N' ELSE s.pre_eqp_id END pre_eqp_id
+                ,s.lot_cnt
+                ,s.time_gap_hrs
+                ,s.create_tmstp
+                ,s.update_tmstp
+                ,s.pre_measure_ppid
+                ,s.sched_measure_ppid
+                ,s.init_cycle_yn
+                ,t.measure_ppid_rottn_yn
+                ,s.cur_init_cycle_cnt
+            FROM ivm_k_ds_ovl_status s
+            JOIN (
+                SELECT
+                    c.k_dsm_seq, 0 index_no, c.device_id, c.step_seq, c.eqp_id
+                    ,c.ppid, c.reticle_id, c.pre_eqp_id, c.measure_ppid_rottn_yn, c.chamber_id
+                FROM ivm_k_ds_ovl_config c
+                UNION
+                SELECT
+                    c.k_dsm_seq, dt.index_no, c.device_id, c.step_seq, dt.eqp_id
+                    ,dt.ppid, dt.reticle_id, dt.pre_eqp_id, c.measure_ppid_rottn_tn, dt.chamber_id
+                FROM ivm_k_ds_ovl_config c
+                JOIN ivm_k_ds_ovl_config_dt dt ON c.k_dsm_seq = dt.k_dsm_seq
+            ) t ON s.k_dsm_seq = t.k_dsm_seq AND s.index_no = t.index_no
+        )
+    )
+    SELECT
+        k_dsm_seq, index_no, device_id, step_seq
+        ,eqp_id, chamber_id, ppid, reticle_id, pre_eqp_id
+        ,SUM(lot_cnt) AS total_lot_cnt
+        ,MAX(time_gap_hrs) AS max_time_base_hrs
+        ,measure_ppid_rottn_yn
+        ,SYSTIMESTAMP AS create_tmstp
+    FROM BaseDate
+    GROUP BY
+        k_dsm_seq, index_no, device_id, step_seq
+        ,eqp_id, chamber_id, ppid, reticle_id, pre_eqp_id
+        ,measure_ppid_rottn_yn
+    """
+)
+
+
+# ---------------------------------------------------------------------------
+# 2. 삭제쿼리 (all delete)
+# ---------------------------------------------------------------------------
+DELETE_LOT_STATUS_SQL = text("DELETE FROM ivm_k_ds_ovl_lot_status")
+
+
+# ---------------------------------------------------------------------------
+# 3. 저장쿼리 (all insert) - executemany 로 bulk insert
+# ---------------------------------------------------------------------------
+INSERT_LOT_STATUS_SQL = text(
+    """
+    INSERT INTO ivm_k_ds_ovl_lot_status (
+        k_dsm_seq, index_no, device_id, step_seq
+        ,eqp_id, chamber_id, ppid, reticle_id, pre_eqp_id
+        ,total_lot_cnt, max_time_base_hrs, measure_ppid_rottn_yn, create_tmstp
+    ) VALUES (
+        :k_dsm_seq, :index_no, :device_id, :step_seq
+        ,:eqp_id, :chamber_id, :ppid, :reticle_id, :pre_eqp_id
+        ,:total_lot_cnt, :max_time_base_hrs, :measure_ppid_rottn_yn, :create_tmstp
+    )
+    """
+)
+
+
+
 # 아래 쿼리를 datalake에 저장하는데 space_datamart에 저장하는 코딩을 만들어라
 '''
 select s.k_dsm_seq, s.index_no
